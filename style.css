@@ -1,0 +1,56 @@
+.app-div {
+    color: white;
+    font-size: 20px;
+}
+
+ul {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.task {
+    list-style-type: none;
+    background: rgb(0, 255, 64);
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.delete-button {
+    background: red;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background: darkred;
+}
+
+.complete-button {
+    background: green;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.completed .complete-button {
+    pointer-events: none;
+    background: rgb(151, 151, 151);
+}
+
+.completed {
+    background-color: rgb(75, 75, 75);
+}
+
+.complete-button:hover {
+    background: darkgreen;
+}

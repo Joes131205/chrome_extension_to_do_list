@@ -2,8 +2,7 @@ console.log("content");
 
 // Create elements
 const appDiv = document.createElement("div");
-appDiv.style.color = "white";
-appDiv.style.fontSize = "20px";
+appDiv.classList.add("app-div");
 
 const toDoListDiv = document.createElement("div");
 const toDoList = document.createElement("div");
@@ -58,36 +57,14 @@ function completeTask(index) {
 function renderTask() {
     toDoList.innerHTML = "";
     const ul = document.createElement("ul");
-    ul.style.display = "flex";
-    ul.style.gap = "20px";
-    ul.style.flexWrap = "wrap";
     list.forEach((task, index) => {
         const li = document.createElement("li");
-        li.style.listStyleType = "none";
-        li.style.background = "cyan";
-        li.style.padding = "1rem 2rem";
-        li.style.borderRadius = "10px";
-        li.style.display = "flex";
-        li.style.alignItems = "center";
-        li.style.gap = "1.5rem";
-        li.style.justifyContent = "center";
+        li.classList.add("task");
         li.textContent = task;
 
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "DEL";
-        deleteButton.style.background = "red";
-        deleteButton.style.color = "white";
-        deleteButton.style.padding = "0.5rem 1rem";
-        deleteButton.style.border = "none";
-        deleteButton.style.borderRadius = "5px";
-        deleteButton.style.cursor = "pointer";
-        deleteButton.addEventListener("mouseover", () => {
-            deleteButton.style.background = "darkred";
-        });
-
-        deleteButton.addEventListener("mouseout", () => {
-            deleteButton.style.background = "red";
-        });
+        deleteButton.classList.add("delete-button");
 
         deleteButton.addEventListener("click", () => {
             deleteTask(index);
@@ -95,20 +72,10 @@ function renderTask() {
 
         const completeButton = document.createElement("button");
         completeButton.textContent = "DONE";
-        completeButton.style.background = "green";
-        completeButton.style.color = "white";
-        completeButton.style.padding = "0.5rem 1rem";
-        completeButton.style.border = "none";
-        completeButton.style.borderRadius = "5px";
-        completeButton.style.cursor = "pointer";
-        completeButton.addEventListener("mouseover", () => {
-            completeButton.style.background = "darkgreen";
-        });
-        completeButton.addEventListener("mouseout", () => {
-            completeButton.style.background = "green";
-        });
+        completeButton.classList.add("complete-button");
         completeButton.addEventListener("click", () => {
             completeTask(index);
+            li.classList.add("completed");
         });
 
         li.appendChild(completeButton);
