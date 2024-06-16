@@ -5,13 +5,44 @@ const appDiv = document.createElement("div");
 appDiv.classList.add("app-div");
 
 const toDoListDiv = document.createElement("div");
+toDoListDiv.classList.add("to-do-list-div");
+
 const toDoList = document.createElement("div");
+toDoList.classList.add("to-do-list");
+
 const toDoListForm = document.createElement("div");
+toDoListForm.classList.add("to-do-list-form");
+
 const pointsDiv = document.createElement("div");
+pointsDiv.classList.add("points-div");
 
 // Initialize variables
 let list = [];
 let points = 0;
+class ShopItem {
+    constructor({ item, time, title, description }) {
+        this.item = item;
+        this.time = time;
+        this.title = title;
+        this.description = description;
+    }
+}
+
+class ListItem {
+    constructor(id, task, type, completed) {
+        this.id = id;
+        this.task = task;
+        this.type = type;
+        this.completed = completed;
+    }
+}
+
+class ListItemRepeat extends ListItem {
+    constructor(id, task, type, completions) {
+        super(id, task, type);
+        this.completions = completions;
+    }
+}
 
 // Function to check if DOM is ready
 function afterDOMLoaded() {
@@ -37,8 +68,14 @@ function init(related, secondaryInner) {
 }
 
 // Add task to list
-function addList(task) {
-    list.push(task);
+function addList(task, type) {
+    let newTask;
+    if (type === "once") {
+        newTask = new ListItem(Date.now(), task, type, false);
+    } else {
+        newTask = new ListItemRepeat(Date.now(), task, type, 0);
+    }
+    list.push(newTask);
 }
 
 // Delete task from list
@@ -48,11 +85,17 @@ function deleteTask(index) {
 }
 
 // Complete task and increment points
-function completeTask(index) {
+function completeOnceTask(index) {
+    list[index].completed = true;
     points++;
     renderPoints();
 }
-
+function completeIncrementTask(index) {
+    list[index].completions++;
+    points++;
+    renderPoints();
+    renderTask();
+}
 // Render task list
 function renderTask() {
     toDoList.innerHTML = "";
@@ -60,27 +103,53 @@ function renderTask() {
     list.forEach((task, index) => {
         const li = document.createElement("li");
         li.classList.add("task");
-        li.textContent = task;
+        if (task.type === "once") {
+            li.classList.add(task.completed && "completed");
+            li.textContent = task.task;
 
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "DEL";
-        deleteButton.classList.add("delete-button");
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "DEL";
+            deleteButton.classList.add("delete-button");
 
-        deleteButton.addEventListener("click", () => {
-            deleteTask(index);
-        });
+            deleteButton.addEventListener("click", () => {
+                deleteTask(index);
+            });
 
-        const completeButton = document.createElement("button");
-        completeButton.textContent = "DONE";
-        completeButton.classList.add("complete-button");
-        completeButton.addEventListener("click", () => {
-            completeTask(index);
-            li.classList.add("completed");
-        });
+            const completeButton = document.createElement("button");
+            completeButton.textContent = "DONE";
+            completeButton.classList.add("complete-button");
+            completeButton.addEventListener("click", () => {
+                completeOnceTask(index);
+                li.classList.add("completed");
+            });
 
-        li.appendChild(completeButton);
-        li.appendChild(deleteButton);
-        ul.appendChild(li);
+            li.appendChild(completeButton);
+            li.appendChild(deleteButton);
+            ul.appendChild(li);
+        } else {
+            const li = document.createElement("li");
+            li.classList.add("task");
+            li.classList.add(task.completed && "completed");
+            li.textContent = task.task;
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "DEL";
+            deleteButton.classList.add("delete-button");
+            deleteButton.addEventListener("click", () => {
+                deleteTask(index);
+            });
+            const completeButton = document.createElement("button");
+            completeButton.textContent = "ADD";
+            completeButton.classList.add("complete-button");
+            completeButton.addEventListener("click", () => {
+                completeIncrementTask(index);
+            });
+            const completedText = document.createElement("p");
+            completedText.textContent = "Completed: " + task.completions;
+            li.appendChild(completeButton);
+            li.appendChild(deleteButton);
+            li.appendChild(completedText);
+            ul.appendChild(li);
+        }
     });
     toDoList.appendChild(ul);
 }
@@ -96,15 +165,32 @@ function renderToDoList() {
     const form = document.createElement("form");
     const taskInput = document.createElement("input");
     taskInput.setAttribute("type", "text");
-    const button = document.createElement("input");
-    button.setAttribute("type", "submit");
-    button.value = "Add";
+    taskInput.placeholder = "Add new task";
+    taskInput.id = "input";
+
+    const typeSelect = document.createElement("select");
+    typeSelect.id = "type";
+    const onceOption = document.createElement("option");
+    onceOption.value = "once";
+    onceOption.textContent = "Do once";
+    const repeatOption = document.createElement("option");
+    repeatOption.value = "repeat";
+    repeatOption.textContent = "Repeating / Incremental";
+    typeSelect.appendChild(onceOption);
+    typeSelect.appendChild(repeatOption);
+
+    const addButton = document.createElement("input");
+    addButton.setAttribute("type", "submit");
+    addButton.value = "Add";
+
     form.appendChild(taskInput);
-    form.appendChild(button);
+    form.appendChild(typeSelect);
+    form.appendChild(addButton);
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (taskInput.value) {
-            addList(taskInput.value);
+            const type = typeSelect.value;
+            addList(taskInput.value, type);
             taskInput.value = "";
             renderTask();
         } else {
