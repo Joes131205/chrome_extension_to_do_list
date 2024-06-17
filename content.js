@@ -16,15 +16,16 @@ toDoListForm.classList.add("to-do-list-form");
 const pointsDiv = document.createElement("div");
 pointsDiv.classList.add("points-div");
 
+const shopDiv = document.createElement("div");
+shopDiv.classList.add("shop-div");
+
 // Initialize variables
 let list = [];
 let points = 0;
 class ShopItem {
-    constructor({ item, time, title, description }) {
-        this.item = item;
-        this.time = time;
+    constructor({ title, cost }) {
         this.title = title;
-        this.description = description;
+        this.cost = cost;
     }
 }
 
@@ -44,10 +45,12 @@ class ListItemRepeat extends ListItem {
     }
 }
 
+let related;
+
 // Function to check if DOM is ready
 function afterDOMLoaded() {
     console.log("loaded");
-    const related = document.getElementById("related");
+    related = document.getElementById("related");
     const secondaryInner = document.getElementById("secondary-inner");
 
     if (related && secondaryInner) {
@@ -59,12 +62,14 @@ function afterDOMLoaded() {
 
 // Initialize application
 function init(related, secondaryInner) {
-    related.innerHTML = "";
+    related.style.display = "none";
     renderToDoList();
     renderPoints();
+    renderShop();
     appDiv.appendChild(toDoListDiv);
     appDiv.appendChild(pointsDiv);
-    secondaryInner.insertAdjacentElement("beforeend", appDiv);
+    appDiv.appendChild(shopDiv);
+    secondaryInner.insertAdjacentElement("beforebegin", appDiv);
 }
 
 // Add task to list
@@ -211,6 +216,64 @@ function renderPoints() {
     const pointsEl = document.createElement("p");
     pointsEl.textContent = `Points: ${points}`;
     pointsDiv.appendChild(pointsEl);
+}
+
+// Render Shop
+function renderShop() {
+    const shopHeading = document.createElement("h2");
+    shopHeading.textContent = "Shop";
+    shopDiv.appendChild(shopHeading);
+    const rewards = [
+        new ShopItem({
+            title: "Short Break (5 minutes)",
+            cost: 3,
+        }),
+        new ShopItem({
+            title: "Medium Break (15 minutes)",
+            cost: 10,
+        }),
+        new ShopItem({
+            title: "Long Break (30 minutes)",
+            cost: 20,
+        }),
+        new ShopItem({
+            title: "Gaming Session (20 minutes)",
+            cost: 15,
+        }),
+        new ShopItem({
+            title: "Watch Video (10 minutes)",
+            cost: 7,
+        }),
+        new ShopItem({
+            title: "Stretching Exercise (10 minutes)",
+            cost: 6,
+        }),
+    ];
+    const shopList = document.createElement("ul");
+    rewards.forEach((reward) => {
+        const rewardLi = document.createElement("li");
+        const rewardButton = document.createElement("button");
+
+        const rewardTitle = document.createElement("p");
+        rewardTitle.textContent = `${reward.title} - ${reward.cost} Points`;
+        rewardLi.appendChild(rewardTitle);
+
+        rewardButton.textContent = "BUY";
+        rewardButton.addEventListener("click", () => {
+            if (points >= reward.cost) {
+                points -= reward.cost;
+                if (reward.title === "Watch Video (10 minutes)") {
+                    related.style.display = "block";
+                }
+                renderPoints();
+            } else {
+                alert("Not enough points");
+            }
+        });
+        rewardLi.appendChild(rewardButton);
+        shopList.appendChild(rewardLi);
+    });
+    shopDiv.appendChild(shopList);
 }
 
 // Check if DOM is ready
