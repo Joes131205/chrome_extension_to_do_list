@@ -22,8 +22,26 @@ shopDiv.classList.add("shop-div");
 // Initialize variables
 let list = [];
 let points = 0;
+
+function saveData() {
+    chrome.storage.local.set({ list, points }, function () {
+        console.log("Data saved to local storage");
+    });
+}
+
+function loadData() {
+    chrome.storage.local.get(["list", "points"], function (result) {
+        list = result.list || [];
+        points = result.points || 0;
+        console.log("Data loaded from local storage");
+    });
+}
+
+loadData();
+
 class ShopItem {
-    constructor({ title, cost }) {
+    constructor({ category, title, cost }) {
+        this.category = category;
         this.title = title;
         this.cost = cost;
     }
@@ -86,6 +104,7 @@ function addList(task, type) {
 // Delete task from list
 function deleteTask(index) {
     list.splice(index, 1);
+    saveData();
     renderTask();
 }
 
@@ -93,11 +112,13 @@ function deleteTask(index) {
 function completeOnceTask(index) {
     list[index].completed = true;
     points++;
+    saveData();
     renderPoints();
 }
 function completeIncrementTask(index) {
     list[index].completions++;
     points++;
+    saveData();
     renderPoints();
     renderTask();
 }
@@ -225,33 +246,21 @@ function renderShop() {
     shopDiv.appendChild(shopHeading);
     const rewards = [
         new ShopItem({
-            title: "Short Break (5 minutes)",
-            cost: 3,
-        }),
-        new ShopItem({
-            title: "Medium Break (15 minutes)",
-            cost: 10,
-        }),
-        new ShopItem({
-            title: "Long Break (30 minutes)",
-            cost: 20,
-        }),
-        new ShopItem({
+            category: "gaming",
             title: "Gaming Session (20 minutes)",
             cost: 15,
         }),
         new ShopItem({
-            title: "Watch Video (10 minutes)",
+            category: "youtube",
+            title: "Watch YouTube Video (10 minutes)",
             cost: 7,
         }),
-        new ShopItem({
-            title: "Stretching Exercise (10 minutes)",
-            cost: 6,
-        }),
     ];
+
     const shopList = document.createElement("ul");
     rewards.forEach((reward) => {
         const rewardLi = document.createElement("li");
+        rewardLi.classList.add("shop_item");
         const rewardButton = document.createElement("button");
 
         const rewardTitle = document.createElement("p");

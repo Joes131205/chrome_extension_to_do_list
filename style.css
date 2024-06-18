@@ -1,6 +1,11 @@
 .app-div {
     color: white;
     font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 ul {
@@ -95,4 +100,25 @@ input[type="submit"]:hover {
     display: flex;
     flex-direction: column;
     gap: 5rem;
+}
+
+.shop_item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+.shop_item button {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.shop_item button:hover {
+    background-color: #3e8e41;
 }
