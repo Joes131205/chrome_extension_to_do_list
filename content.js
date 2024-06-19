@@ -19,6 +19,9 @@ pointsDiv.classList.add("points-div");
 const shopDiv = document.createElement("div");
 shopDiv.classList.add("shop-div");
 
+const watchTimeDiv = document.createElement("div");
+watchTimeDiv.classList.add("watchTime-div");
+
 // Initialize variables
 let list = [];
 let points = 0;
@@ -81,9 +84,12 @@ function afterDOMLoaded() {
 // Initialize application
 function init(related, secondaryInner) {
     related.style.display = "none";
+
+    trackWatchTime();
     renderToDoList();
     renderPoints();
     renderShop();
+
     appDiv.appendChild(toDoListDiv);
     appDiv.appendChild(pointsDiv);
     appDiv.appendChild(shopDiv);
@@ -290,4 +296,39 @@ if (document.readyState !== "complete") {
     window.addEventListener("load", afterDOMLoaded);
 } else {
     afterDOMLoaded();
+}
+
+function trackWatchTime() {
+    const videoElement = document.querySelector("video");
+    let startTime = null;
+
+    const mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === "paused" && videoElement.paused) {
+                const endTime = Date.now();
+                const watchTime = endTime - startTime;
+
+                console.log("Watch Time: " + watchTime);
+                renderWatchTime(watchTime);
+                startTime = null;
+            } else if (
+                mutation.attributeName === "paused" &&
+                !videoElement.paused
+            ) {
+                startTime = Date.now();
+            }
+        });
+    });
+
+    mutationObserver.observe(videoElement, {
+        attributes: true,
+        attributeFilter: ["paused"],
+    });
+}
+
+function renderWatchTime(watchTime) {
+    console.log(watchTime);
+    const watchTimeDiv = document.createElement("div");
+    watchTimeDiv.textContent = "Watch Time: 0h 0m 0s";
+    appDiv.appendChild(watchTimeDiv);
 }
