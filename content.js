@@ -25,18 +25,59 @@ watchTimeDiv.classList.add("watchTime-div");
 // Initialize variables
 let list = [];
 let points = 0;
+let watchTime = 0;
 
 function saveData() {
-    chrome.storage.local.set({ list, points }, function () {
+    chrome.storage.local.set({ list, points, watchTime }, function () {
         console.log("Data saved to local storage");
     });
 }
 
 function loadData() {
-    chrome.storage.local.get(["list", "points"], function (result) {
-        list = result.list || [];
-        points = result.points || 0;
-        console.log("Data loaded from local storage");
+    chrome.storage.local.get(
+        ["list", "points", "watchTime", "totalWatchTime"],
+        function (result) {
+            list = result.list || [];
+            points = result.points || 0;
+            watchTime = result.totalWatchTime || 0;
+            console.log("Data loaded from local storage");
+        }
+    );
+    const lastSavedDateStr =
+        JSON.parse(localStorage.getItem("lastSavedDate")) || null;
+    const lastSavedDate = lastSavedDateStr ? new Date(lastSavedDateStr) : null;
+    const currentDate = new Date();
+    if (lastSavedDate && currentDate.getDate() !== lastSavedDate.getDate()) {
+        list.forEach((list) => {
+            if (list.type === "repeat") {
+                list.completions = 0;
+            } else {
+                list.completed = false;
+            }
+        });
+        points = 0;
+        watchTime = 0;
+    }
+    list.map((task) => {
+        if (task.type === "once") {
+            return new ListItem(
+                task.id,
+                task.title,
+                task.type,
+                task.difficulty,
+                task.points,
+                task.completed
+            );
+        } else {
+            return new ListItemRepeat(
+                task.id,
+                task.title,
+                task.type,
+                task.difficulty,
+                task.points,
+                task.completions
+            );
+        }
     });
 }
 
@@ -84,8 +125,7 @@ function afterDOMLoaded() {
 // Initialize application
 function init(related, secondaryInner) {
     related.style.display = "none";
-
-    trackWatchTime();
+    renderWatchTime(watchTime);
     renderToDoList();
     renderPoints();
     renderShop();
@@ -298,37 +338,11 @@ if (document.readyState !== "complete") {
     afterDOMLoaded();
 }
 
-function trackWatchTime() {
-    const videoElement = document.querySelector("video");
-    let startTime = null;
-
-    const mutationObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === "paused" && videoElement.paused) {
-                const endTime = Date.now();
-                const watchTime = endTime - startTime;
-
-                console.log("Watch Time: " + watchTime);
-                renderWatchTime(watchTime);
-                startTime = null;
-            } else if (
-                mutation.attributeName === "paused" &&
-                !videoElement.paused
-            ) {
-                startTime = Date.now();
-            }
-        });
-    });
-
-    mutationObserver.observe(videoElement, {
-        attributes: true,
-        attributeFilter: ["paused"],
-    });
-}
-
-function renderWatchTime(watchTime) {
-    console.log(watchTime);
+function renderWatchTime() {
+    const hours = Math.floor(watchTime / (1000 * 60 * 60));
+    const minutes = Math.floor((watchTime % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((watchTime % (1000 * 60)) / 1000);
     const watchTimeDiv = document.createElement("div");
-    watchTimeDiv.textContent = "Watch Time: 0h 0m 0s";
+    watchTimeDiv.textContent = `Your watch time: ${hours}h, ${minutes}m, ${seconds}s`;
     appDiv.appendChild(watchTimeDiv);
 }

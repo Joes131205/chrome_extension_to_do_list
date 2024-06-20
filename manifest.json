@@ -3,13 +3,7 @@
     "name": "YouTube Enhancer",
     "version": "1.0",
     "description": "Enhances your YouTube experience",
-    "permissions": [
-        "storage",
-        "activeTab",
-        "scripting",
-        "tabs",
-        "https://www.youtube.com/"
-    ],
+    "permissions": ["storage", "activeTab", "scripting", "tabs"],
     "background": {
         "service_worker": "background.js"
     },
@@ -19,5 +13,6 @@
             "js": ["content.js"],
             "css": ["style.css"]
         }
-    ]
+    ],
+    "host_permissions": ["https://www.youtube.com/*"]
 }
