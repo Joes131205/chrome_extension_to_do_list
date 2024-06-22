@@ -1,24 +1,25 @@
-let currentVideoStartTime;
-
+console.log("track loaded");
 function updateTotalWatchTime(watchTime) {
     chrome.storage.local.set({ totalWatchTime: watchTime }, () => {
         console.log("Total watch time updated:", watchTime);
     });
 }
 
+let currentVideoStartTimes = null;
+
 document.querySelector("video").addEventListener("play", () => {
-    currentVideoStartTime = Date.now();
+    currentVideoStartTimes = Date.now();
     console.log("Video started playing");
 });
 
 document.querySelector("video").addEventListener("ended pause seeking", () => {
-    if (currentVideoStartTime) {
+    if (currentVideoStartTimes) {
         const currentTime = Date.now();
         const watchTime =
-            (currentTime - currentVideoStartTime) / (1000 * 60 * 60); // Convert milliseconds to hours
+            (currentTime - currentVideoStartTimes) / (1000 * 60 * 60); // Convert milliseconds to hours
         totalWatchTime += watchTime;
         updateTotalWatchTime(totalWatchTime);
-        currentVideoStartTime = null;
+        currentVideoStartTimes = null;
         console.log("Video watch time:", watchTime, "hours");
     }
 });
