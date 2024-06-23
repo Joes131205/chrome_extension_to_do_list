@@ -19,14 +19,17 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 console.log("tracking...");
                 let currentVideoStartTimes = null;
 
-                document.querySelector("video").addEventListener("play", () => {
-                    currentVideoStartTimes = Date.now();
-                    console.log("Video started playing");
-                });
-
                 document
-                    .querySelector("video")
-                    .addEventListener("ended pause seeking", () => {
+                    .querySelector(".video-stream")
+                    .addEventListener("play", () => {
+                        currentVideoStartTimes = Date.now();
+                        console.log("Video started playing");
+                    });
+                document
+                    .querySelector(".video-stream")
+                    .addEventListener("ended pause seeking", (event) => {
+                        console.log(event);
+                        console.log("paused");
                         if (currentVideoStartTimes) {
                             const currentTime = Date.now();
                             const watchTime =
