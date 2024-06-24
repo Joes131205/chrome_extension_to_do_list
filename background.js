@@ -1,4 +1,5 @@
 let totalWatchTime = 0;
+
 console.log("background loaded");
 
 chrome.storage.local.get("totalWatchTime", (data) => {
@@ -16,37 +17,38 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         await chrome.scripting.executeScript({
             target: { tabId: tabId },
             func: () => {
-                console.log("tracking...");
                 let currentVideoStartTimes = null;
+                const videoElement = document.querySelector("video");
 
-                document
-                    .querySelector(".video-stream")
-                    .addEventListener("play", () => {
+                if (videoElement) {
+                    console.log("tracking...");
+
+                    videoElement.addEventListener("play", () => {
                         currentVideoStartTimes = Date.now();
                         console.log("Video started playing");
                     });
-                document
-                    .querySelector(".video-stream")
-                    .addEventListener("ended pause seeking", (event) => {
-                        console.log(event);
+
+                    videoElement.onpause = () => {
                         console.log("paused");
                         if (currentVideoStartTimes) {
                             const currentTime = Date.now();
                             const watchTime =
-                                (currentTime - currentVideoStartTimes) /
-                                (1000 * 60 * 60); // Convert milliseconds to hours
+                                currentTime - currentVideoStartTimes;
+
+                            const hour = watchTime / (1000 * 60 * 60);
+                            const minutes = watchTime / (1000 * 60);
+                            const seconds = watchTime / 1000;
+
                             chrome.runtime.sendMessage({
                                 action: "updateTotalWatchTime",
-                                watchTime: watchTime,
+                                watchTime,
                             });
                             currentVideoStartTimes = null;
-                            console.log(
-                                "Video watch time:",
-                                watchTime,
-                                "hours"
-                            );
                         }
-                    });
+                    };
+                } else {
+                    console.log("Video element not found");
+                }
             },
         });
     }
@@ -54,9 +56,19 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 chrome.runtime.onMessage.addListener((message) => {
     if (message.action === "updateTotalWatchTime") {
+        console.log("updating total watch time");
         totalWatchTime += message.watchTime;
-        chrome.storage.local.set({ totalWatchTime: totalWatchTime }, () => {
-            console.log("Total watch time updated:", totalWatchTime);
-        });
+
+        chrome.storage.local.set(
+            {
+                totalWatchTime: {
+                    totalWatchTime: totalWatchTime,
+                    lastSavedDateStr: new Date().toLocaleDateString(),
+                },
+            },
+            () => {
+                console.log("Total watch time updated:", totalWatchTime);
+            }
+        );
     }
 });
