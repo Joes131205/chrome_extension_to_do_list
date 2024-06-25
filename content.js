@@ -69,6 +69,9 @@ function afterDOMLoaded() {
 // Initialize application
 function init(related, secondaryInner) {
     related.style.display = "none";
+
+    loadData();
+
     renderWatchTime(watchTime);
     renderToDoList();
     renderPoints();
@@ -312,7 +315,6 @@ function loadData() {
     const lastSavedDate = lastSavedDateStr ? new Date(lastSavedDateStr) : null;
     const currentDate = new Date();
     if (lastSavedDate && currentDate.getDate() !== lastSavedDate.getDate()) {
-        console.log("not same!");
         list.forEach((list) => {
             if (list.type === "repeat") {
                 list.completions = 0;
@@ -351,5 +353,3 @@ function loadData() {
         }
     );
 }
-
-loadData();

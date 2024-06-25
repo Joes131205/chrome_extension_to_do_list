@@ -2,6 +2,26 @@ let totalWatchTime = 0;
 
 console.log("background loaded");
 
+chrome.tabs.onMessage.addListener((message, sender, sendResponse) => {
+    console.log(message);
+    if (message.action === "updateTotalWatchTime") {
+        console.log("updating total watch time");
+        totalWatchTime += message.watchTime;
+
+        chrome.storage.local.set(
+            {
+                totalWatchTime: {
+                    totalWatchTime: totalWatchTime,
+                    lastSavedDateStr: new Date().toLocaleDateString(),
+                },
+            },
+            () => {
+                console.log("Total watch time updated:", totalWatchTime);
+            }
+        );
+    }
+});
+
 chrome.storage.local.get("totalWatchTime", (data) => {
     if (data.totalWatchTime) {
         totalWatchTime = data.totalWatchTime;
@@ -31,14 +51,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                     videoElement.onpause = () => {
                         console.log("paused");
                         if (currentVideoStartTimes) {
+                            console.log("counting watch time");
                             const currentTime = Date.now();
                             const watchTime =
                                 currentTime - currentVideoStartTimes;
-
-                            const hour = watchTime / (1000 * 60 * 60);
-                            const minutes = watchTime / (1000 * 60);
-                            const seconds = watchTime / 1000;
-
+                            console.log(watchTime);
                             chrome.runtime.sendMessage({
                                 action: "updateTotalWatchTime",
                                 watchTime,
@@ -51,24 +68,5 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 }
             },
         });
-    }
-});
-
-chrome.runtime.onMessage.addListener((message) => {
-    if (message.action === "updateTotalWatchTime") {
-        console.log("updating total watch time");
-        totalWatchTime += message.watchTime;
-
-        chrome.storage.local.set(
-            {
-                totalWatchTime: {
-                    totalWatchTime: totalWatchTime,
-                    lastSavedDateStr: new Date().toLocaleDateString(),
-                },
-            },
-            () => {
-                console.log("Total watch time updated:", totalWatchTime);
-            }
-        );
     }
 });
