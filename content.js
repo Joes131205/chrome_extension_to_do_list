@@ -325,6 +325,7 @@ function loadData() {
         points = 0;
         watchTime = 0;
     }
+
     list.map((task) => {
         if (task.type === "once") {
             return new ListItem(
@@ -353,3 +354,35 @@ function loadData() {
         }
     );
 }
+function trackVideo() {
+    const videoElement = document.querySelector("video");
+
+    if (videoElement) {
+        console.log("tracking...");
+        chrome.storage.local.get(
+            ["totalWatchTime", "lastSavedDateStr"],
+            function (result) {
+                console.log(result);
+            }
+        );
+        videoElement.addEventListener("play", () => {
+            const currentVideoStartTimes = Date.now();
+            console.log("Video started playing");
+
+            videoElement.addEventListener("pause", () => {
+                console.log("paused");
+                const currentTime = Date.now();
+                const watchTime = currentTime - currentVideoStartTimes;
+                console.log(watchTime);
+                chrome.runtime.sendMessage({
+                    action: "updateTotalWatchTime",
+                    watchTime,
+                });
+            });
+        });
+    } else {
+        console.log("Video element not found");
+    }
+}
+
+trackVideo();
