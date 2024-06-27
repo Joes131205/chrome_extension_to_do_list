@@ -301,13 +301,14 @@ function saveData() {
 }
 
 function loadData() {
+    console.log("loading data...");
     let lastSavedDateStr;
     chrome.storage.local.get(
         ["list", "points", "watchTime", "totalWatchTime", "lastSavedDateStr"],
         function (result) {
             list = result.list || [];
             points = result.points || 0;
-            watchTime = result.totalWatchTime || 0;
+            watchTime = result.totalWatchTime.totalWatchTime || 0;
             lastSavedDateStr = JSON.parse(result.lastSavedDateStr) || null;
             console.log("Data loaded from local storage");
         }
@@ -386,3 +387,9 @@ function trackVideo() {
 }
 
 trackVideo();
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "restartData") {
+        loadData();
+    }
+});

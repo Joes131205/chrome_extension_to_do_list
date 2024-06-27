@@ -13,20 +13,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log("updating total watch time");
         currentTotalWatchTime += request.watchTime;
 
-        chrome.storage.local.set(
-            {
+        chrome.storage.local
+            .set({
                 totalWatchTime: {
                     totalWatchTime: currentTotalWatchTime,
                     lastSavedDateStr: new Date().toLocaleDateString(),
                 },
-            },
-            () => {
-                console.log(currentTotalWatchTime);
-                console.log(
-                    "Total watch time updated:",
-                    totalWatchTime.totalWatchTime
-                );
-            }
-        );
+            })
+            .then(() => {
+                chrome.runtime.sendMessage({
+                    action: "restartData",
+                });
+            });
     }
 });
