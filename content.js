@@ -69,17 +69,12 @@ function afterDOMLoaded() {
 // Initialize application
 function init(related, secondaryInner) {
     related.style.display = "none";
-
+    appDiv.innerHTML = "";
     loadData();
-
     renderWatchTime(watchTime);
     renderToDoList();
     renderPoints();
     renderShop();
-
-    appDiv.appendChild(toDoListDiv);
-    appDiv.appendChild(pointsDiv);
-    appDiv.appendChild(shopDiv);
     secondaryInner.insertAdjacentElement("beforebegin", appDiv);
 }
 
@@ -176,6 +171,8 @@ function renderTask() {
 // Render to-do list
 function renderToDoList() {
     // Render heading
+    toDoListDiv.innerHTML = "";
+
     const toDoListHeading = document.createElement("h2");
     toDoListHeading.textContent = "To Do List";
     toDoListDiv.appendChild(toDoListHeading);
@@ -222,6 +219,7 @@ function renderToDoList() {
     toDoList.innerHTML = "";
     renderTask();
     toDoListDiv.appendChild(toDoList);
+    appDiv.appendChild(toDoListDiv);
 }
 
 // Render points
@@ -230,6 +228,7 @@ function renderPoints() {
     const pointsEl = document.createElement("p");
     pointsEl.textContent = `Points: ${points}`;
     pointsDiv.appendChild(pointsEl);
+    appDiv.appendChild(pointsDiv);
 }
 
 // Render Shop
@@ -276,6 +275,7 @@ function renderShop() {
         shopList.appendChild(rewardLi);
     });
     shopDiv.appendChild(shopList);
+    appDiv.appendChild(shopDiv);
 }
 
 // Check if DOM is ready
@@ -304,12 +304,12 @@ function loadData() {
     console.log("loading data...");
     let lastSavedDateStr;
     chrome.storage.local.get(
-        ["list", "points", "watchTime", "totalWatchTime", "lastSavedDateStr"],
+        ["list", "points", "watchTime", "totalWatchTime"],
         function (result) {
+            console.log(result);
             list = result.list || [];
             points = result.points || 0;
             watchTime = result.totalWatchTime.totalWatchTime || 0;
-            lastSavedDateStr = JSON.parse(result.lastSavedDateStr) || null;
             console.log("Data loaded from local storage");
         }
     );
@@ -386,10 +386,6 @@ function trackVideo() {
     }
 }
 
-trackVideo();
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "restartData") {
-        loadData();
-    }
-});
+setInterval(() => {
+    loadData();
+}, 5000);
