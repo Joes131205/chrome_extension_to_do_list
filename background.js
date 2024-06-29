@@ -4,7 +4,7 @@ console.log("background loaded");
 
 chrome.storage.local.get("totalWatchTime", (data) => {
     if (data.totalWatchTime) {
-        currentTotalWatchTime = data.totalWatchTime.totalWatchTime;
+        currentTotalWatchTime = data.totalWatchTime;
     }
 });
 
@@ -15,10 +15,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         console.log(currentTotalWatchTime);
 
         chrome.storage.local.set({
-            totalWatchTime: {
-                totalWatchTime: currentTotalWatchTime,
-                lastSavedDateStr: new Date().toLocaleDateString(),
-            },
+            totalWatchTime: currentTotalWatchTime,
         });
     }
 });

@@ -55,23 +55,26 @@ let related;
 
 // Function to check if DOM is ready
 function afterDOMLoaded() {
-    console.log("loaded");
-    related = document.getElementById("related");
-    const secondaryInner = document.getElementById("secondary-inner");
+    if (document.readyState === "complete" && !chrome.runtime.lastError) {
+        console.log("loaded");
+        related = document.getElementById("related");
+        const secondaryInner = document.getElementById("secondary-inner");
 
-    if (related && secondaryInner) {
-        init(related, secondaryInner);
-    } else {
-        setTimeout(afterDOMLoaded, 100);
+        if (related && secondaryInner) {
+            related.style.display = "none";
+
+            init(related, secondaryInner);
+        } else {
+            setTimeout(afterDOMLoaded, 100);
+        }
     }
 }
 
 // Initialize application
-function init(related, secondaryInner) {
-    related.style.display = "none";
+async function init(secondaryInner) {
     appDiv.innerHTML = "";
-    loadData();
-    renderWatchTime(watchTime);
+    await loadData();
+    renderWatchTime();
     renderToDoList();
     renderPoints();
     renderShop();
@@ -300,58 +303,66 @@ function saveData() {
     });
 }
 
-function loadData() {
+async function loadData() {
     console.log("loading data...");
-    let lastSavedDateStr;
-    chrome.storage.local.get(
-        ["list", "points", "watchTime", "totalWatchTime"],
+    await chrome.storage.local.get(
+        ["list", "points", "totalWatchTime"],
         function (result) {
             console.log(result);
             list = result.list || [];
             points = result.points || 0;
-            watchTime = result.totalWatchTime.totalWatchTime || 0;
+            watchTime = result.totalWatchTime || 0;
             console.log("Data loaded from local storage");
-        }
-    );
-    const lastSavedDate = lastSavedDateStr ? new Date(lastSavedDateStr) : null;
-    const currentDate = new Date();
-    if (lastSavedDate && currentDate.getDate() !== lastSavedDate.getDate()) {
-        list.forEach((list) => {
-            if (list.type === "repeat") {
-                list.completions = 0;
-            } else {
-                list.completed = false;
-            }
-        });
-        points = 0;
-        watchTime = 0;
-    }
 
-    list.map((task) => {
-        if (task.type === "once") {
-            return new ListItem(
-                task.id,
-                task.title,
-                task.type,
-                task.difficulty,
-                task.points,
-                task.completed
+            // Move the code that depends on the loaded data inside the callback function
+            let lastSavedDateStr = result.lastSavedDateStr;
+            let lastSavedDate = lastSavedDateStr
+                ? new Date(lastSavedDateStr)
+                : null;
+            const currentDate = new Date();
+            if (
+                lastSavedDate &&
+                currentDate.getDate() !== lastSavedDate.getDate()
+            ) {
+                list.forEach((list) => {
+                    if (list.type === "repeat") {
+                        list.completions = 0;
+                    } else {
+                        list.completed = false;
+                    }
+                });
+                points = 0;
+                watchTime = 0;
+            }
+
+            list = list.map((task) => {
+                if (task.type === "once") {
+                    return new ListItem(
+                        task.id,
+                        task.title,
+                        task.type,
+                        task.difficulty,
+                        task.points,
+                        task.completed
+                    );
+                } else {
+                    return new ListItemRepeat(
+                        task.id,
+                        task.title,
+                        task.type,
+                        task.difficulty,
+                        task.points,
+                        task.completions
+                    );
+                }
+            });
+            lastSavedDate = currentDate;
+            chrome.storage.local.set(
+                { lastSavedDateStr: JSON.stringify(lastSavedDate) },
+                function () {
+                    console.log("Date saved to local storage");
+                }
             );
-        } else {
-            return new ListItemRepeat(
-                task.id,
-                task.title,
-                task.type,
-                task.difficulty,
-                task.points,
-                task.completions
-            );
-        }
-    });
-    chrome.storage.local.set(
-        { lastSavedDateStr: JSON.stringify(new Date()) },
-        function () {
-            console.log("Date saved to local storage");
         }
     );
 }
@@ -379,13 +390,11 @@ function trackVideo() {
                     action: "updateTotalWatchTime",
                     watchTime,
                 });
+                loadData();
             });
         });
     } else {
         console.log("Video element not found");
     }
 }
-
-setInterval(() => {
-    loadData();
-}, 5000);
+trackVideo();
