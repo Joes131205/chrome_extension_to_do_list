@@ -1,26 +1,12 @@
 console.log("content");
 
 // Create elements
-const appDiv = document.createElement("div");
-appDiv.classList.add("app-div");
-
-const toDoListDiv = document.createElement("div");
-toDoListDiv.classList.add("to-do-list-div");
-
-const toDoList = document.createElement("div");
-toDoList.classList.add("to-do-list");
-
-const toDoListForm = document.createElement("div");
-toDoListForm.classList.add("to-do-list-form");
-
-const pointsDiv = document.createElement("div");
-pointsDiv.classList.add("points-div");
-
-const shopDiv = document.createElement("div");
-shopDiv.classList.add("shop-div");
-
-const watchTimeDiv = document.createElement("div");
-watchTimeDiv.classList.add("watchTime-div");
+const appDiv = createDiv("app-div");
+const toDoListDiv = createDiv("to-do-list-div");
+const toDoList = createDiv("to-do-list");
+const pointsDiv = createDiv("points-div");
+const shopDiv = createDiv("shop-div");
+const watchTimeDiv = createDiv("watchTime-div");
 
 // Initialize variables
 let list = [];
@@ -36,7 +22,7 @@ class ShopItem {
 }
 
 class ListItem {
-    constructor(id, task, type, completed) {
+    constructor(id, task, type, completed = false) {
         this.id = id;
         this.task = task;
         this.type = type;
@@ -45,13 +31,20 @@ class ListItem {
 }
 
 class ListItemRepeat extends ListItem {
-    constructor(id, task, type, completions) {
+    constructor(id, task, type, completions = 0) {
         super(id, task, type);
         this.completions = completions;
     }
 }
 
 let related;
+
+// Function to create a div with a class name
+function createDiv(className) {
+    const div = document.createElement("div");
+    div.classList.add(className);
+    return div;
+}
 
 // Function to check if DOM is ready
 function afterDOMLoaded() {
@@ -62,8 +55,7 @@ function afterDOMLoaded() {
 
         if (related && secondaryInner) {
             related.style.display = "none";
-
-            init(related, secondaryInner);
+            init(secondaryInner);
         } else {
             setTimeout(afterDOMLoaded, 100);
         }
@@ -73,23 +65,32 @@ function afterDOMLoaded() {
 // Initialize application
 async function init(secondaryInner) {
     appDiv.innerHTML = "";
-    await loadData();
-    renderWatchTime();
-    renderToDoList();
-    renderPoints();
-    renderShop();
-    secondaryInner.insertAdjacentElement("beforebegin", appDiv);
+    try {
+        await loadData();
+        await renderElements();
+        secondaryInner.insertAdjacentElement("beforebegin", appDiv);
+    } catch (error) {
+        console.error("Initialization failed:", error);
+    }
+}
+
+async function renderElements() {
+    await renderWatchTime();
+    await renderToDoList();
+    await renderPoints();
+    await renderShop();
 }
 
 // Add task to list
 function addList(task, type) {
-    let newTask;
-    if (type === "once") {
-        newTask = new ListItem(Date.now(), task, type, false);
-    } else {
-        newTask = new ListItemRepeat(Date.now(), task, type, 0);
-    }
+    const id = Date.now();
+    const newTask =
+        type === "once"
+            ? new ListItem(id, task, type)
+            : new ListItemRepeat(id, task, type);
     list.push(newTask);
+    saveData();
+    renderTask();
 }
 
 // Delete task from list
@@ -105,7 +106,9 @@ function completeOnceTask(index) {
     points++;
     saveData();
     renderPoints();
+    renderTask();
 }
+
 function completeIncrementTask(index) {
     list[index].completions++;
     points++;
@@ -113,116 +116,92 @@ function completeIncrementTask(index) {
     renderPoints();
     renderTask();
 }
+
 // Render task list
 function renderTask() {
     toDoList.innerHTML = "";
     const ul = document.createElement("ul");
+
     list.forEach((task, index) => {
         const li = document.createElement("li");
         li.classList.add("task");
         if (task.type === "once") {
-            li.classList.add(task.completed && "completed");
+            li.classList.toggle("completed", task.completed);
             li.textContent = task.task;
 
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "DEL";
-            deleteButton.classList.add("delete-button");
+            const deleteButton = createButton("DEL", () => deleteTask(index));
+            const completeButton = createButton("DONE", () =>
+                completeOnceTask(index)
+            );
 
-            deleteButton.addEventListener("click", () => {
-                deleteTask(index);
-            });
-
-            const completeButton = document.createElement("button");
-            completeButton.textContent = "DONE";
-            completeButton.classList.add("complete-button");
-            completeButton.addEventListener("click", () => {
-                completeOnceTask(index);
-                li.classList.add("completed");
-            });
-
-            li.appendChild(completeButton);
-            li.appendChild(deleteButton);
-            ul.appendChild(li);
+            li.append(deleteButton, completeButton);
         } else {
-            const li = document.createElement("li");
-            li.classList.add("task");
-            li.classList.add(task.completed && "completed");
             li.textContent = task.task;
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "DEL";
-            deleteButton.classList.add("delete-button");
-            deleteButton.addEventListener("click", () => {
-                deleteTask(index);
-            });
-            const completeButton = document.createElement("button");
-            completeButton.textContent = "ADD";
-            completeButton.classList.add("complete-button");
-            completeButton.addEventListener("click", () => {
-                completeIncrementTask(index);
-            });
+            const deleteButton = createButton("DEL", () => deleteTask(index));
+            const completeButton = createButton("ADD", () =>
+                completeIncrementTask(index)
+            );
+
             const completedText = document.createElement("p");
-            completedText.textContent = "Completed: " + task.completions;
-            li.appendChild(completeButton);
-            li.appendChild(deleteButton);
-            li.appendChild(completedText);
-            ul.appendChild(li);
+            completedText.textContent = `Completed: ${task.completions}`;
+            li.append(deleteButton, completeButton, completedText);
         }
+        ul.appendChild(li);
     });
+
     toDoList.appendChild(ul);
+}
+
+// Create button with text and click handler
+function createButton(text, onClick) {
+    const button = document.createElement("button");
+    button.textContent = text;
+    button.addEventListener("click", onClick);
+    return button;
 }
 
 // Render to-do list
 function renderToDoList() {
-    // Render heading
     toDoListDiv.innerHTML = "";
 
     const toDoListHeading = document.createElement("h2");
     toDoListHeading.textContent = "To Do List";
     toDoListDiv.appendChild(toDoListHeading);
 
-    // Set up form for inputting task
     const form = document.createElement("form");
     const taskInput = document.createElement("input");
     taskInput.setAttribute("type", "text");
     taskInput.placeholder = "Add new task";
-    taskInput.id = "input";
 
     const typeSelect = document.createElement("select");
-    typeSelect.id = "type";
-    const onceOption = document.createElement("option");
-    onceOption.value = "once";
-    onceOption.textContent = "Do once";
-    const repeatOption = document.createElement("option");
-    repeatOption.value = "repeat";
-    repeatOption.textContent = "Repeating / Incremental";
-    typeSelect.appendChild(onceOption);
-    typeSelect.appendChild(repeatOption);
+    const onceOption = createOption("once", "Do once");
+    const repeatOption = createOption("repeat", "Repeating / Incremental");
+    typeSelect.append(onceOption, repeatOption);
 
-    const addButton = document.createElement("input");
-    addButton.setAttribute("type", "submit");
-    addButton.value = "Add";
-
-    form.appendChild(taskInput);
-    form.appendChild(typeSelect);
-    form.appendChild(addButton);
-    form.addEventListener("submit", (e) => {
+    const addButton = createButton("Add", (e) => {
         e.preventDefault();
         if (taskInput.value) {
-            const type = typeSelect.value;
-            addList(taskInput.value, type);
+            addList(taskInput.value, typeSelect.value);
             taskInput.value = "";
-            renderTask();
         } else {
-            alert("Please enter an task");
+            alert("Please enter a task");
         }
     });
+
+    form.append(taskInput, typeSelect, addButton);
     toDoListDiv.appendChild(form);
 
-    // Render task list
-    toDoList.innerHTML = "";
     renderTask();
     toDoListDiv.appendChild(toDoList);
     appDiv.appendChild(toDoListDiv);
+}
+
+// Create option element
+function createOption(value, text) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = text;
+    return option;
 }
 
 // Render points
@@ -236,9 +215,11 @@ function renderPoints() {
 
 // Render Shop
 function renderShop() {
+    shopDiv.innerHTML = "";
     const shopHeading = document.createElement("h2");
     shopHeading.textContent = "Shop";
     shopDiv.appendChild(shopHeading);
+
     const rewards = [
         new ShopItem({
             category: "gaming",
@@ -253,30 +234,31 @@ function renderShop() {
     ];
 
     const shopList = document.createElement("ul");
+
     rewards.forEach((reward) => {
         const rewardLi = document.createElement("li");
         rewardLi.classList.add("shop_item");
-        const rewardButton = document.createElement("button");
 
         const rewardTitle = document.createElement("p");
         rewardTitle.textContent = `${reward.title} - ${reward.cost} Points`;
         rewardLi.appendChild(rewardTitle);
 
-        rewardButton.textContent = "BUY";
-        rewardButton.addEventListener("click", () => {
+        const rewardButton = createButton("BUY", () => {
             if (points >= reward.cost) {
                 points -= reward.cost;
-                if (reward.title === "Watch Video (10 minutes)") {
+                renderPoints();
+                if (reward.title.includes("Watch YouTube Video")) {
                     related.style.display = "block";
                 }
-                renderPoints();
             } else {
                 alert("Not enough points");
             }
         });
+
         rewardLi.appendChild(rewardButton);
         shopList.appendChild(rewardLi);
     });
+
     shopDiv.appendChild(shopList);
     appDiv.appendChild(shopDiv);
 }
@@ -288,113 +270,128 @@ if (document.readyState !== "complete") {
     afterDOMLoaded();
 }
 
+// Render watch time
 function renderWatchTime() {
     const hours = Math.floor(watchTime / (1000 * 60 * 60));
     const minutes = Math.floor((watchTime % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((watchTime % (1000 * 60)) / 1000);
-    const watchTimeDiv = document.createElement("div");
     watchTimeDiv.textContent = `Your watch time: ${hours}h, ${minutes}m, ${seconds}s`;
     appDiv.appendChild(watchTimeDiv);
 }
 
+// Save data to Chrome storage
 function saveData() {
-    chrome.storage.local.set({ list, points, watchTime }, function () {
-        console.log("Data saved to local storage");
+    chrome.storage.local.set({ list, points, watchTime }, () => {
+        if (chrome.runtime.lastError) {
+            console.error("Error saving data:", chrome.runtime.lastError);
+        } else {
+            console.log("Data saved to local storage");
+        }
+    });
+}
+// Load data from Chrome storage
+async function loadData() {
+    return new Promise((resolve, reject) => {
+        console.log("loading data...");
+        chrome.storage.local.get(
+            ["list", "points", "watchTime", "lastSavedDateStr"],
+            (result) => {
+                if (chrome.runtime.lastError) {
+                    console.error(
+                        "Error loading data:",
+                        chrome.runtime.lastError
+                    );
+                    return reject(chrome.runtime.lastError);
+                }
+
+                list = result.list || [];
+                points = result.points || 0;
+                watchTime = result.watchTime || 0;
+
+                const lastSavedDate = result.lastSavedDateStr
+                    ? new Date(result.lastSavedDateStr)
+                    : null;
+                const currentDate = new Date();
+
+                if (
+                    lastSavedDate &&
+                    currentDate.getDate() !== lastSavedDate.getDate()
+                ) {
+                    list.forEach((task) => {
+                        if (task.type === "repeat") {
+                            task.completions = 0;
+                        } else {
+                            task.completed = false;
+                        }
+                    });
+                    points = 0;
+                    watchTime = 0;
+                }
+
+                chrome.storage.local.set(
+                    { lastSavedDateStr: currentDate.toISOString() },
+                    () => {
+                        if (chrome.runtime.lastError) {
+                            console.error(
+                                "Error saving date:",
+                                chrome.runtime.lastError
+                            );
+                            return reject(chrome.runtime.lastError);
+                        }
+                        console.log("Date saved to local storage");
+                        resolve();
+                    }
+                );
+            }
+        );
     });
 }
 
-async function loadData() {
-    console.log("loading data...");
-    await chrome.storage.local.get(
-        ["list", "points", "totalWatchTime"],
-        function (result) {
-            console.log(result);
-            list = result.list || [];
-            points = result.points || 0;
-            watchTime = result.totalWatchTime || 0;
-            console.log("Data loaded from local storage");
-
-            // Move the code that depends on the loaded data inside the callback function
-            let lastSavedDateStr = result.lastSavedDateStr;
-            let lastSavedDate = lastSavedDateStr
-                ? new Date(lastSavedDateStr)
-                : null;
-            const currentDate = new Date();
-            if (
-                lastSavedDate &&
-                currentDate.getDate() !== lastSavedDate.getDate()
-            ) {
-                list.forEach((list) => {
-                    if (list.type === "repeat") {
-                        list.completions = 0;
-                    } else {
-                        list.completed = false;
-                    }
-                });
-                points = 0;
-                watchTime = 0;
-            }
-
-            list = list.map((task) => {
-                if (task.type === "once") {
-                    return new ListItem(
-                        task.id,
-                        task.title,
-                        task.type,
-                        task.difficulty,
-                        task.points,
-                        task.completed
-                    );
-                } else {
-                    return new ListItemRepeat(
-                        task.id,
-                        task.title,
-                        task.type,
-                        task.difficulty,
-                        task.points,
-                        task.completions
-                    );
-                }
-            });
-            lastSavedDate = currentDate;
-            chrome.storage.local.set(
-                { lastSavedDateStr: JSON.stringify(lastSavedDate) },
-                function () {
-                    console.log("Date saved to local storage");
-                }
-            );
-        }
-    );
-}
+// Track video watch time
 function trackVideo() {
     const videoElement = document.querySelector("video");
 
     if (videoElement) {
-        console.log("tracking...");
-        chrome.storage.local.get(
-            ["totalWatchTime", "lastSavedDateStr"],
-            function (result) {
-                console.log(result);
-            }
-        );
-        videoElement.addEventListener("play", () => {
-            const currentVideoStartTimes = Date.now();
-            console.log("Video started playing");
+        let currentVideoStartTimes;
 
-            videoElement.addEventListener("pause", () => {
-                console.log("paused");
+        videoElement.addEventListener("play", () => {
+            currentVideoStartTimes = Date.now();
+            console.log("Video started playing");
+        });
+        videoElement.addEventListener("pause", () => {
+            if (currentVideoStartTimes) {
                 const currentTime = Date.now();
-                const watchTime = currentTime - currentVideoStartTimes;
-                console.log(watchTime);
+                const watchDuration = currentTime - currentVideoStartTimes;
+                watchTime += watchDuration;
+
                 chrome.runtime.sendMessage({
                     action: "updateTotalWatchTime",
                     watchTime,
                 });
-                loadData();
-            });
+
+                saveData();
+                renderWatchTime();
+            }
+        });
+
+        videoElement.addEventListener("ended", () => {
+            if (currentVideoStartTimes) {
+                const currentTime = Date.now();
+                const watchDuration = currentTime - currentVideoStartTimes;
+                watchTime += watchDuration;
+
+                chrome.runtime.sendMessage({
+                    action: "updateTotalWatchTime",
+                    watchTime,
+                });
+
+                saveData();
+                renderWatchTime();
+            }
         });
     } else {
         console.log("Video element not found");
     }
 }
+
 trackVideo();
