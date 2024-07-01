@@ -1,6 +1,11 @@
 console.log("content");
 
-// Create elements
+// Initialize variables and create elements
+let list = [];
+let points = 0;
+let watchTime = 0;
+let related;
+
 const appDiv = createDiv("app-div");
 const toDoListDiv = createDiv("to-do-list-div");
 const toDoList = createDiv("to-do-list");
@@ -8,11 +13,7 @@ const pointsDiv = createDiv("points-div");
 const shopDiv = createDiv("shop-div");
 const watchTimeDiv = createDiv("watchTime-div");
 
-// Initialize variables
-let list = [];
-let points = 0;
-let watchTime = 0;
-
+// ShopItem Class
 class ShopItem {
     constructor({ category, title, cost }) {
         this.category = category;
@@ -21,6 +22,7 @@ class ShopItem {
     }
 }
 
+// ListItem Class
 class ListItem {
     constructor(id, task, type, completed = false) {
         this.id = id;
@@ -30,6 +32,7 @@ class ListItem {
     }
 }
 
+// ListItemRepeat Class extends ListItem
 class ListItemRepeat extends ListItem {
     constructor(id, task, type, completions = 0) {
         super(id, task, type);
@@ -37,16 +40,14 @@ class ListItemRepeat extends ListItem {
     }
 }
 
-let related;
-
-// Function to create a div with a class name
+// Create a div with a class name
 function createDiv(className) {
     const div = document.createElement("div");
     div.classList.add(className);
     return div;
 }
 
-// Function to check if DOM is ready
+// Initialize application after DOM is loaded
 function afterDOMLoaded() {
     if (document.readyState === "complete" && !chrome.runtime.lastError) {
         console.log("loaded");
@@ -74,6 +75,7 @@ async function init(secondaryInner) {
     }
 }
 
+// Render all elements
 async function renderElements() {
     await renderWatchTime();
     await renderToDoList();
@@ -90,31 +92,30 @@ function addList(task, type) {
             : new ListItemRepeat(id, task, type);
     list.push(newTask);
     saveData();
-    renderTask();
+    init();
 }
 
 // Delete task from list
 function deleteTask(index) {
     list.splice(index, 1);
     saveData();
-    renderTask();
+    init();
 }
 
-// Complete task and increment points
+// Complete once task
 function completeOnceTask(index) {
     list[index].completed = true;
     points++;
     saveData();
-    renderPoints();
-    renderTask();
+    init();
 }
 
+// Complete and increment task
 function completeIncrementTask(index) {
     list[index].completions++;
     points++;
     saveData();
-    renderPoints();
-    renderTask();
+    init();
 }
 
 // Render task list
@@ -247,6 +248,7 @@ function renderShop() {
             if (points >= reward.cost) {
                 points -= reward.cost;
                 renderPoints();
+                renderShop();
                 if (reward.title.includes("Watch YouTube Video")) {
                     related.style.display = "block";
                 }
@@ -261,13 +263,6 @@ function renderShop() {
 
     shopDiv.appendChild(shopList);
     appDiv.appendChild(shopDiv);
-}
-
-// Check if DOM is ready
-if (document.readyState !== "complete") {
-    window.addEventListener("load", afterDOMLoaded);
-} else {
-    afterDOMLoaded();
 }
 
 // Render watch time
@@ -289,6 +284,7 @@ function saveData() {
         }
     });
 }
+
 // Load data from Chrome storage
 async function loadData() {
     return new Promise((resolve, reject) => {
@@ -370,7 +366,7 @@ function trackVideo() {
                 });
 
                 saveData();
-                renderWatchTime();
+                init();
             }
         });
 
@@ -386,12 +382,19 @@ function trackVideo() {
                 });
 
                 saveData();
-                renderWatchTime();
+                init();
             }
         });
     } else {
         console.log("Video element not found");
     }
+}
+
+// Check if DOM is ready and load after window load if necessary
+if (document.readyState !== "complete") {
+    window.addEventListener("load", afterDOMLoaded);
+} else {
+    afterDOMLoaded();
 }
 
 trackVideo();
