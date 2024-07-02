@@ -15,10 +15,11 @@ const watchTimeDiv = createDiv("watchTime-div");
 
 // ShopItem Class
 class ShopItem {
-    constructor({ category, title, cost }) {
+    constructor({ category, title, cost, minutes }) {
         this.category = category;
         this.title = title;
         this.cost = cost;
+        this.minutes = minutes;
     }
 }
 
@@ -128,19 +129,32 @@ function renderTask() {
         li.classList.add("task");
         if (task.type === "once") {
             li.classList.toggle("completed", task.completed);
-            li.textContent = task.task;
-
-            const deleteButton = createButton("DEL", () => deleteTask(index));
-            const completeButton = createButton("DONE", () =>
-                completeOnceTask(index)
+            const p = document.createElement("p");
+            p.textContent = task.task;
+            li.appendChild(p);
+            const deleteButton = createButton(
+                "DEL",
+                () => deleteTask(index),
+                "delete-button"
+            );
+            const completeButton = createButton(
+                "DONE",
+                () => completeOnceTask(index),
+                "complete-button"
             );
 
             li.append(deleteButton, completeButton);
         } else {
             li.textContent = task.task;
-            const deleteButton = createButton("DEL", () => deleteTask(index));
-            const completeButton = createButton("ADD", () =>
-                completeIncrementTask(index)
+            const deleteButton = createButton(
+                "DEL",
+                () => deleteTask(index),
+                "delete-button"
+            );
+            const completeButton = createButton(
+                "ADD",
+                () => completeIncrementTask(index),
+                "complete-button"
             );
 
             const completedText = document.createElement("p");
@@ -154,9 +168,10 @@ function renderTask() {
 }
 
 // Create button with text and click handler
-function createButton(text, onClick) {
+function createButton(text, onClick, css) {
     const button = document.createElement("button");
     button.textContent = text;
+    button.classList.add(css);
     button.addEventListener("click", onClick);
     return button;
 }
@@ -179,15 +194,19 @@ function renderToDoList() {
     const repeatOption = createOption("repeat", "Repeating / Incremental");
     typeSelect.append(onceOption, repeatOption);
 
-    const addButton = createButton("Add", (e) => {
-        e.preventDefault();
-        if (taskInput.value) {
-            addList(taskInput.value, typeSelect.value);
-            taskInput.value = "";
-        } else {
-            alert("Please enter a task");
-        }
-    });
+    const addButton = createButton(
+        "Add",
+        (e) => {
+            e.preventDefault();
+            if (taskInput.value) {
+                addList(taskInput.value, typeSelect.value);
+                taskInput.value = "";
+            } else {
+                alert("Please enter a task");
+            }
+        },
+        "add_task"
+    );
 
     form.append(taskInput, typeSelect, addButton);
     toDoListDiv.appendChild(form);
@@ -213,7 +232,12 @@ function renderPoints() {
     pointsDiv.appendChild(pointsEl);
     appDiv.appendChild(pointsDiv);
 }
-
+function openYoutube(minutes) {
+    related.style.display = "block";
+    setTimeout(() => {
+        related.style.display = "none";
+    }, minutes * 60 * 1000);
+}
 // Render Shop
 function renderShop() {
     shopDiv.innerHTML = "";
@@ -223,14 +247,10 @@ function renderShop() {
 
     const rewards = [
         new ShopItem({
-            category: "gaming",
-            title: "Gaming Session (20 minutes)",
-            cost: 15,
-        }),
-        new ShopItem({
             category: "youtube",
             title: "Watch YouTube Video (10 minutes)",
             cost: 7,
+            minutes: 10,
         }),
     ];
 
@@ -244,18 +264,22 @@ function renderShop() {
         rewardTitle.textContent = `${reward.title} - ${reward.cost} Points`;
         rewardLi.appendChild(rewardTitle);
 
-        const rewardButton = createButton("BUY", () => {
-            if (points >= reward.cost) {
-                points -= reward.cost;
-                renderPoints();
-                renderShop();
-                if (reward.title.includes("Watch YouTube Video")) {
-                    related.style.display = "block";
+        const rewardButton = createButton(
+            "BUY",
+            () => {
+                if (points >= reward.cost) {
+                    points -= reward.cost;
+                    renderPoints();
+                    renderShop();
+                    if (reward.category === "youtube") {
+                        openYoutube(reward.category);
+                    }
+                } else {
+                    alert("Not enough points");
                 }
-            } else {
-                alert("Not enough points");
-            }
-        });
+            },
+            "shop_buy"
+        );
 
         rewardLi.appendChild(rewardButton);
         shopList.appendChild(rewardLi);

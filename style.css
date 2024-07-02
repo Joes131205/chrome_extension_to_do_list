@@ -6,6 +6,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    width: 100%;
 }
 
 ul {
@@ -16,7 +17,7 @@ ul {
 
 .task {
     list-style-type: none;
-    background: rgb(0, 255, 64);
+    background: rgb(0, 110, 28);
     padding: 1rem 2rem;
     border-radius: 10px;
     display: flex;
@@ -24,7 +25,10 @@ ul {
     gap: 1.5rem;
     justify-content: center;
 }
-
+.task p {
+    max-width: 200px;
+    overflow-wrap: break-word;
+}
 .delete-button {
     background: red;
     color: white;
@@ -69,6 +73,7 @@ form {
     border: 1px solid #ccc;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
 input[type="text"],
@@ -81,7 +86,7 @@ select {
     border-radius: 10px;
 }
 
-input[type="submit"] {
+.add_task {
     width: 100%;
     height: 40px;
     background-color: #4caf50;
@@ -92,7 +97,7 @@ input[type="submit"] {
     cursor: pointer;
 }
 
-input[type="submit"]:hover {
+.add_task:hover {
     background-color: #3e8e41;
 }
 .to-do-list-div {
@@ -110,7 +115,7 @@ input[type="submit"]:hover {
     text-align: center;
     width: 100%;
 }
-.shop_item button {
+.shop_item .shop_buy {
     background-color: #4caf50;
     color: #fff;
     padding: 10px 20px;
@@ -119,6 +124,6 @@ input[type="submit"]:hover {
     cursor: pointer;
 }
 
-.shop_item button:hover {
+.shop_item .shop_buy:hover {
     background-color: #3e8e41;
 }
