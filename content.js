@@ -2,6 +2,7 @@ console.log("content");
 
 // Initialize variables and create elements
 let list = [];
+let goalWatchTime = 0;
 let points = 0;
 let watchTime = 0;
 let related;
@@ -232,11 +233,11 @@ function renderPoints() {
     pointsDiv.appendChild(pointsEl);
     appDiv.appendChild(pointsDiv);
 }
-function openYoutube(minutes) {
-    related.style.display = "block";
+async function openYoutube(minutes) {
     setTimeout(() => {
-        related.style.display = "none";
+        related.style.display = "block";
     }, minutes * 60 * 1000);
+    related.style.display = "none";
 }
 // Render Shop
 function renderShop() {
@@ -294,13 +295,54 @@ function renderWatchTime() {
     const hours = Math.floor(watchTime / (1000 * 60 * 60));
     const minutes = Math.floor((watchTime % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((watchTime % (1000 * 60)) / 1000);
-    watchTimeDiv.textContent = `Your watch time: ${hours}h, ${minutes}m, ${seconds}s`;
+
+    const goalHours = Math.floor(goalWatchTime / (1000 * 60 * 60));
+    const goalMinutes = Math.floor(
+        (goalWatchTime % (1000 * 60 * 60)) / (1000 * 60)
+    );
+    const goalSeconds = Math.floor((goalWatchTime % (1000 * 60)) / 1000);
+
+    // Create elements for watch time
+    const watchTimeParagraph = document.createElement("p");
+    watchTimeParagraph.textContent = `Your watch time: ${hours}h, ${minutes}m, ${seconds}s`;
+
+    // Create elements for goal watch time
+    const goalWatchTimeParagraph = document.createElement("p");
+    goalWatchTimeParagraph.textContent = `Your goal watch time: ${goalHours}h, ${goalMinutes}m, ${goalSeconds}s`;
+
+    // Clear previous content
+    watchTimeDiv.innerHTML = "";
+
+    // Append new content
+
+    const form = document.createElement("form");
+    const goalWatchTimeInput = document.createElement("input");
+    goalWatchTimeInput.setAttribute("type", "number");
+    goalWatchTimeInput.placeholder = "Enter your goal watch time in minutes";
+    const submitButton = createButton(
+        "Set goal watch time",
+        () => {},
+        "submit_button"
+    );
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        goalWatchTime = parseInt(goalWatchTimeInput.value) * 60 * 1000;
+        saveData();
+        init();
+    });
+
+    form.append(goalWatchTimeInput, submitButton);
+    watchTimeDiv.appendChild(form);
+    watchTimeDiv.appendChild(watchTimeParagraph);
+    watchTimeDiv.appendChild(document.createElement("br")); // Add a line break
+    watchTimeDiv.appendChild(goalWatchTimeParagraph);
+
     appDiv.appendChild(watchTimeDiv);
 }
 
 // Save data to Chrome storage
 function saveData() {
-    chrome.storage.local.set({ list, points, watchTime }, () => {
+    chrome.storage.local.set({ list, points, watchTime, goalWatchTime }, () => {
         if (chrome.runtime.lastError) {
             console.error("Error saving data:", chrome.runtime.lastError);
         } else {
@@ -314,7 +356,13 @@ async function loadData() {
     return new Promise((resolve, reject) => {
         console.log("loading data...");
         chrome.storage.local.get(
-            ["list", "points", "watchTime", "lastSavedDateStr"],
+            [
+                "list",
+                "points",
+                "watchTime",
+                "lastSavedDateStr",
+                "goalWatchTime",
+            ],
             (result) => {
                 if (chrome.runtime.lastError) {
                     console.error(
@@ -327,7 +375,7 @@ async function loadData() {
                 list = result.list || [];
                 points = result.points || 0;
                 watchTime = result.watchTime || 0;
-
+                goalWatchTime = result.goalWatchTime || 0;
                 const lastSavedDate = result.lastSavedDateStr
                     ? new Date(result.lastSavedDateStr)
                     : null;
