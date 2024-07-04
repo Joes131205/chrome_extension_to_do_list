@@ -127,3 +127,14 @@ select {
 .shop_item .shop_buy:hover {
     background-color: #3e8e41;
 }
+
+.progress-bar-container {
+    width: 30rem;
+    height: 1.5rem;
+    background: lightgrey;
+    border-radius: 20px;
+}
+.progress-bar {
+    height: 100%;
+    background: rgb(0, 212, 53);
+}

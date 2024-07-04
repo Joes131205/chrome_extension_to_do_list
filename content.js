@@ -1,5 +1,3 @@
-console.log("content");
-
 // Initialize variables and create elements
 let list = [];
 let goalWatchTime = 0;
@@ -52,7 +50,6 @@ function createDiv(className) {
 // Initialize application after DOM is loaded
 function afterDOMLoaded() {
     if (document.readyState === "complete" && !chrome.runtime.lastError) {
-        console.log("loaded");
         related = document.getElementById("related");
         const secondaryInner = document.getElementById("secondary-inner");
 
@@ -318,12 +315,27 @@ function renderWatchTime() {
     const form = document.createElement("form");
     const goalWatchTimeInput = document.createElement("input");
     goalWatchTimeInput.setAttribute("type", "number");
+
     goalWatchTimeInput.placeholder = "Enter your goal watch time in minutes";
+    goalWatchTimeInput.style.width = "100px";
+    goalWatchTimeInput.style.padding = "10px";
+    goalWatchTimeInput.style.borderRadius = "5px";
+    goalWatchTimeInput.style.border = "1px solid #ccc";
+    goalWatchTimeInput.style.fontSize = "16px";
+
     const submitButton = createButton(
         "Set goal watch time",
         () => {},
         "submit_button"
     );
+    submitButton.style.width = "100px";
+    submitButton.style.padding = "10px";
+    submitButton.style.borderRadius = "5px";
+    submitButton.style.border = "1px solid #ccc";
+    submitButton.style.fontSize = "16px";
+    submitButton.style.backgroundColor = "#4CAF50";
+    submitButton.style.color = "#fff";
+    submitButton.style.cursor = "pointer";
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         goalWatchTime = parseInt(goalWatchTimeInput.value) * 60 * 1000;
@@ -336,6 +348,17 @@ function renderWatchTime() {
     watchTimeDiv.appendChild(watchTimeParagraph);
     watchTimeDiv.appendChild(document.createElement("br")); // Add a line break
     watchTimeDiv.appendChild(goalWatchTimeParagraph);
+    // Progress Bar
+    const progressBarContainer = document.createElement("div");
+    progressBarContainer.classList.add("progress-bar-container");
+    const progressBar = document.createElement("div");
+    progressBar.classList.add("progress-bar-container");
+    progressBar.classList.add("progress-bar");
+
+    const progress = (watchTime / goalWatchTime) * 100;
+    progressBar.style.width = `${progress}%`;
+    progressBarContainer.appendChild(progressBar);
+    watchTimeDiv.appendChild(progressBarContainer);
 
     appDiv.appendChild(watchTimeDiv);
 }
@@ -345,8 +368,6 @@ function saveData() {
     chrome.storage.local.set({ list, points, watchTime, goalWatchTime }, () => {
         if (chrome.runtime.lastError) {
             console.error("Error saving data:", chrome.runtime.lastError);
-        } else {
-            console.log("Data saved to local storage");
         }
     });
 }
@@ -354,7 +375,6 @@ function saveData() {
 // Load data from Chrome storage
 async function loadData() {
     return new Promise((resolve, reject) => {
-        console.log("loading data...");
         chrome.storage.local.get(
             [
                 "list",
@@ -365,10 +385,6 @@ async function loadData() {
             ],
             (result) => {
                 if (chrome.runtime.lastError) {
-                    console.error(
-                        "Error loading data:",
-                        chrome.runtime.lastError
-                    );
                     return reject(chrome.runtime.lastError);
                 }
 
@@ -400,13 +416,8 @@ async function loadData() {
                     { lastSavedDateStr: currentDate.toISOString() },
                     () => {
                         if (chrome.runtime.lastError) {
-                            console.error(
-                                "Error saving date:",
-                                chrome.runtime.lastError
-                            );
                             return reject(chrome.runtime.lastError);
                         }
-                        console.log("Date saved to local storage");
                         resolve();
                     }
                 );
@@ -424,7 +435,6 @@ function trackVideo() {
 
         videoElement.addEventListener("play", () => {
             currentVideoStartTimes = Date.now();
-            console.log("Video started playing");
         });
         videoElement.addEventListener("pause", () => {
             if (currentVideoStartTimes) {
@@ -458,7 +468,6 @@ function trackVideo() {
             }
         });
     } else {
-        console.log("Video element not found");
     }
 }
 

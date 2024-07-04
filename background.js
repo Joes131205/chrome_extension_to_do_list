@@ -10,9 +10,7 @@ chrome.storage.local.get("totalWatchTime", (data) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "updateTotalWatchTime") {
-        console.log("updating total watch time");
         currentTotalWatchTime += request.watchTime;
-        console.log(currentTotalWatchTime);
 
         chrome.storage.local.set({
             totalWatchTime: currentTotalWatchTime,
