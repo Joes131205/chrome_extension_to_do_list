@@ -51,8 +51,9 @@ function createDiv(className) {
 function afterDOMLoaded() {
     if (document.readyState === "complete" && !chrome.runtime.lastError) {
         related = document.getElementById("related");
+        const relatedWidth = related.offsetWidth;
         const secondaryInner = document.getElementById("secondary-inner");
-
+        appDiv.style.width = `${relatedWidth}px`;
         if (related && secondaryInner) {
             related.style.display = "none";
             init(secondaryInner);
@@ -121,13 +122,13 @@ function completeIncrementTask(index) {
 function renderTask() {
     toDoList.innerHTML = "";
     const ul = document.createElement("ul");
-
+    ul.classList.add("list-group");
     list.forEach((task, index) => {
         const li = document.createElement("li");
         li.classList.add("task");
         if (task.type === "once") {
             li.classList.toggle("completed", task.completed);
-            const p = document.createElement("p");
+            const p = document.createElement("h3");
             p.textContent = task.task;
             li.appendChild(p);
             const deleteButton = createButton(
@@ -143,7 +144,9 @@ function renderTask() {
 
             li.append(deleteButton, completeButton);
         } else {
-            li.textContent = task.task;
+            const p = document.createElement("h3");
+            p.textContent = task.task;
+            li.appendChild(p);
             const deleteButton = createButton(
                 "DEL",
                 () => deleteTask(index),
@@ -317,7 +320,7 @@ function renderWatchTime() {
     goalWatchTimeInput.setAttribute("type", "number");
 
     goalWatchTimeInput.placeholder = "Enter your goal watch time in minutes";
-    goalWatchTimeInput.style.width = "100px";
+    goalWatchTimeInput.style.width = "90%";
     goalWatchTimeInput.style.padding = "10px";
     goalWatchTimeInput.style.borderRadius = "5px";
     goalWatchTimeInput.style.border = "1px solid #ccc";
@@ -328,10 +331,10 @@ function renderWatchTime() {
         () => {},
         "submit_button"
     );
-    submitButton.style.width = "100px";
+    submitButton.style.width = "90%";
     submitButton.style.padding = "10px";
     submitButton.style.borderRadius = "5px";
-    submitButton.style.border = "1px solid #ccc";
+    submitButton.style.border = "none";
     submitButton.style.fontSize = "16px";
     submitButton.style.backgroundColor = "#4CAF50";
     submitButton.style.color = "#fff";
@@ -346,7 +349,6 @@ function renderWatchTime() {
     form.append(goalWatchTimeInput, submitButton);
     watchTimeDiv.appendChild(form);
     watchTimeDiv.appendChild(watchTimeParagraph);
-    watchTimeDiv.appendChild(document.createElement("br")); // Add a line break
     watchTimeDiv.appendChild(goalWatchTimeParagraph);
     // Progress Bar
     const progressBarContainer = document.createElement("div");
@@ -356,7 +358,16 @@ function renderWatchTime() {
     progressBar.classList.add("progress-bar");
 
     const progress = (watchTime / goalWatchTime) * 100;
-    progressBar.style.width = `${progress}%`;
+    progressBar.style.width = `${progress > 100 ? 100 : progress}%`;
+    if (progress > 75) {
+        progressBar.style.backgroundColor = "#f44336";
+    } else if (progress > 50 && progress < 75) {
+        progressBar.style.backgroundColor = "#ff9800";
+    } else if (progress > 25 && progress < 50) {
+        progressBar.style.backgroundColor = "#ffcc00";
+    } else {
+        progressBar.style.backgroundColor = "#4CAF50";
+    }
     progressBarContainer.appendChild(progressBar);
     watchTimeDiv.appendChild(progressBarContainer);
 
