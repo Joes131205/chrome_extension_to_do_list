@@ -4,6 +4,7 @@ let goalWatchTime = 0;
 let points = 0;
 let watchTime = 0;
 let related;
+let pointsScale = 1;
 
 const appDiv = createDiv("app-div");
 const toDoListDiv = createDiv("to-do-list-div");
@@ -97,6 +98,11 @@ function addList(task, type) {
 
 // Delete task from list
 function deleteTask(index) {
+    if (list[i].type === "once") {
+        pointsScale -= 0.05;
+    } else {
+        pointsScale -= 0.1;
+    }
     list.splice(index, 1);
     saveData();
     init();
@@ -234,10 +240,10 @@ function renderPoints() {
     appDiv.appendChild(pointsDiv);
 }
 async function openYoutube(minutes) {
+    related.style.display = "block";
     setTimeout(() => {
-        related.style.display = "block";
+        related.style.display = "none";
     }, minutes * 60 * 1000);
-    related.style.display = "none";
 }
 // Render Shop
 function renderShop() {
@@ -250,8 +256,20 @@ function renderShop() {
         new ShopItem({
             category: "youtube",
             title: "Watch YouTube Video (10 minutes)",
-            cost: 7,
+            cost: (3 * pointsScale).toFixed(0),
             minutes: 10,
+        }),
+        new ShopItem({
+            category: "youtube",
+            title: "Watch YouTube Video (30 minutes)",
+            cost: (9 * pointsScale).toFixed(0),
+            minutes: 30,
+        }),
+        new ShopItem({
+            category: "youtube",
+            title: "Watch YouTube Video (1 hour)",
+            cost: (18 * pointsScale).toFixed(0),
+            minutes: 60,
         }),
     ];
 
@@ -403,11 +421,18 @@ async function loadData() {
                 points = result.points || 0;
                 watchTime = result.watchTime || 0;
                 goalWatchTime = result.goalWatchTime || 0;
+                pointsScale = 1;
                 const lastSavedDate = result.lastSavedDateStr
                     ? new Date(result.lastSavedDateStr)
                     : null;
                 const currentDate = new Date();
-
+                list.forEach((task) => {
+                    if (task.type === "repeat") {
+                        pointsScale += 0.1;
+                    } else {
+                        pointsScale += 0.05;
+                    }
+                });
                 if (
                     lastSavedDate &&
                     currentDate.getDate() !== lastSavedDate.getDate()
