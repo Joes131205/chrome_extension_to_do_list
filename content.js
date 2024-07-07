@@ -78,6 +78,11 @@ async function init(secondaryInner) {
 
 // Render all elements
 async function renderElements() {
+    appDiv.appendChild(watchTimeDiv);
+    appDiv.appendChild(toDoListDiv);
+    appDiv.appendChild(pointsDiv);
+    appDiv.appendChild(shopDiv);
+
     await renderWatchTime();
     await renderToDoList();
     await renderPoints();
@@ -220,7 +225,6 @@ function renderToDoList() {
 
     renderTask();
     toDoListDiv.appendChild(toDoList);
-    appDiv.appendChild(toDoListDiv);
 }
 
 // Create option element
@@ -237,7 +241,6 @@ function renderPoints() {
     const pointsEl = document.createElement("p");
     pointsEl.textContent = `Points: ${points}`;
     pointsDiv.appendChild(pointsEl);
-    appDiv.appendChild(pointsDiv);
 }
 async function openYoutube(minutes) {
     related.style.display = "block";
@@ -305,7 +308,6 @@ function renderShop() {
     });
 
     shopDiv.appendChild(shopList);
-    appDiv.appendChild(shopDiv);
 }
 
 // Render watch time
@@ -388,8 +390,6 @@ function renderWatchTime() {
     }
     progressBarContainer.appendChild(progressBar);
     watchTimeDiv.appendChild(progressBarContainer);
-
-    appDiv.appendChild(watchTimeDiv);
 }
 
 // Save data to Chrome storage

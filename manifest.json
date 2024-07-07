@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "YouTube Enhancer",
+    "name": "YouTube SideList",
     "version": "1.0",
-    "description": "Enhances your YouTube experience",
+    "description": "Replaces The Youtube Recommendation Sidebar with To-Do List",
     "permissions": ["storage", "activeTab", "scripting", "tabs"],
     "background": {
         "service_worker": "background.js"
