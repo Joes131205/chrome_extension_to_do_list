@@ -155,3 +155,22 @@ select {
 .progress-bar {
     height: 100%;
 }
+
+.goal-watch-time-input {
+    width: 90%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.submit-button {
+    width: 90%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 16px;
+    background-color: #4caf50;
+    color: #fff;
+    cursor: pointer;
+}

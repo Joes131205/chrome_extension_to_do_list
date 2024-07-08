@@ -103,7 +103,7 @@ function addList(task, type) {
 
 // Delete task from list
 function deleteTask(index) {
-    if (list[i].type === "once") {
+    if (list[index].type === "once") {
         pointsScale -= 0.05;
     } else {
         pointsScale -= 0.1;
@@ -244,9 +244,8 @@ function renderPoints() {
 }
 async function openYoutube(minutes) {
     related.style.display = "block";
-    setTimeout(() => {
-        related.style.display = "none";
-    }, minutes * 60 * 1000);
+    await new Promise((resolve) => setTimeout(resolve, minutes * 60 * 1000));
+    related.style.display = "none";
 }
 // Render Shop
 function renderShop() {
@@ -294,7 +293,7 @@ function renderShop() {
                     renderPoints();
                     renderShop();
                     if (reward.category === "youtube") {
-                        openYoutube(reward.category);
+                        openYoutube(reward.minutes);
                     }
                 } else {
                     alert("Not enough points");
@@ -340,25 +339,14 @@ function renderWatchTime() {
     goalWatchTimeInput.setAttribute("type", "number");
 
     goalWatchTimeInput.placeholder = "Enter your goal watch time in minutes";
-    goalWatchTimeInput.style.width = "90%";
-    goalWatchTimeInput.style.padding = "10px";
-    goalWatchTimeInput.style.borderRadius = "5px";
-    goalWatchTimeInput.style.border = "1px solid #ccc";
-    goalWatchTimeInput.style.fontSize = "16px";
+    goalWatchTimeInput.classList.add("goal-watch-time-input");
 
     const submitButton = createButton(
         "Set goal watch time",
         () => {},
         "submit_button"
     );
-    submitButton.style.width = "90%";
-    submitButton.style.padding = "10px";
-    submitButton.style.borderRadius = "5px";
-    submitButton.style.border = "none";
-    submitButton.style.fontSize = "16px";
-    submitButton.style.backgroundColor = "#4CAF50";
-    submitButton.style.color = "#fff";
-    submitButton.style.cursor = "pointer";
+    submitButton.classList.add("submit-button");
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         goalWatchTime = parseInt(goalWatchTimeInput.value) * 60 * 1000;
