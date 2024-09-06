@@ -8,6 +8,7 @@ It features shop system where user can spend the points collected for doing a ta
 
 Inspired by [Tunde Alao's Feed2Task Chrome Extension](https://chromewebstore.google.com/detail/feed2task/nbjpbhgdgoncijcdochkljojcpfhmlpb)
 
+Expect this to be buggy XD
 ## Tech Stack
 
 1. CSS
